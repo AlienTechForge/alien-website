@@ -1,0 +1,61 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-and-deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_TOKEN }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/alientechforge/site-app:latest
+            ghcr.io/alientechforge/site-app:${{ github.sha }}
+
+      - name: Deploy - Stop old container
+        run: |
+          docker stop site || true
+          docker rm site || true
+
+      - name: Deploy - Start new container
+        run: |
+          docker pull ghcr.io/alientechforge/site-app:${{ github.sha }}
+          docker run -d \
+            -p 2999:3000 \
+            --restart=unless-stopped \
+            --name site \
+            ghcr.io/alientechforge/site-app:${{ github.sha }}
+
+      - name: Health Check
+        run: |
+          echo "Waiting for container to start..."
+          sleep 10
+          if docker ps | grep -q site; then
+            echo "✅ Container is running"
+          else
+            echo "❌ Container failed to start, rolling back..."
+            docker stop site || true
+            docker rm site || true
+            docker run -d \
+              -p 2999:3000 \
+              --restart=unless-stopped \
+              --name site \
+              ghcr.io/alientechforge/site-app:latest
+            exit 1
+          fi
