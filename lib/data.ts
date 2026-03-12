@@ -53,7 +53,7 @@ export const experiencesData = [
     description:
       "負責IDC的維運工作，包括軟硬體的維護。",
     icon: React.createElement(DiTerminal),
-    date: "2025 Feb - Now",
+    date: "2025 Feb - 2026 Feb",
   },
   {
     title: "開發設計師網站",
