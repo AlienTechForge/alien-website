@@ -40,6 +40,14 @@ export const links = [
 
 export const experiencesData = [
   {
+    title: "全端工程師",
+    location: "精誠資訊",
+    description:
+      "負責網路銀行系統的介面開發，涵蓋前端介面設計與後端功能串接。",
+    icon: React.createElement(DiTerminal),
+    date: "2026 Feb - Now",
+  },
+  {
     title: "遠傳工程師",
     location: "IDC OP",
     description:

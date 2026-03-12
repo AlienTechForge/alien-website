@@ -2,7 +2,7 @@ name: Build and Deploy
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -29,6 +29,8 @@ jobs:
         with:
           context: .
           push: true
+          build-args: |
+            RESEND_API_KEY=${{ secrets.RESEND_API_KEY }}
           tags: |
             ghcr.io/alientechforge/site-app:latest
             ghcr.io/alientechforge/site-app:${{ github.sha }}
@@ -51,10 +53,10 @@ jobs:
         run: |
           echo "Waiting for container to start..."
           sleep 10
-          if docker ps | grep -q site; then
-            echo "✅ Container is running"
+          if docker ps --filter "name=^site$" --filter "status=running" | grep -q site; then
+            echo "Container is running"
           else
-            echo "❌ Container failed to start, rolling back..."
+            echo "Container failed to start, rolling back..."
             docker stop site || true
             docker rm site || true
             docker run -d \
